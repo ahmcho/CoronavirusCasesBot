@@ -37,7 +37,7 @@ bot.command('options', (ctx) => {
   SendReportOptions(ctx);
 })
 bot.on("text",(ctx) => {
-	ctx.telegram.sendMessage(ctx.message.chat.id, `What?`);
+	SendReportOptions(ctx);
 })
 bot.action('Simple report', (ctx,next) => {
 	axios.get(TotalConfirmedNumberURL).then(function(countries) {
