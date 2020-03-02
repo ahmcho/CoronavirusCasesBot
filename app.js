@@ -51,7 +51,7 @@ bot.action('Extended report', (ctx,next) => {
 		if(CountryNamesKeyboardTextArray.length === 0){
 			for (Countries in AllCountriesData){
 				let CountryData = AllCountriesData[Countries].attributes;
-				CountryNamesKeyboardTextArray.push(Markup.callbackButton(`${CountryData['Country_Region']}`, `${CountryData['Country_Region'].trim()}`));
+				CountryNamesKeyboardTextArray.push(Markup.callbackButton(`${CountryData['Country_Region']}`, `${CountryData['Country_Region']}`));
 			}
 			SendKeyboardArray(ctx);
 		}
