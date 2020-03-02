@@ -54,7 +54,7 @@ bot.action('Simple report', async (ctx,next) => {
 		
 		
 	})
-	return ctx.reply(`Total confirmed cases in world:\nConfirmed ✅: ${TotalConfirmed}\nDeaths ☠️: ${TotalDead}\nRecovered 💪: ${TotalRecovered}\n`, Extra.markdown().then(()=> next()));
+	return ctx.reply(`Total confirmed cases in world:\nConfirmed ✅: ${TotalConfirmed}\nDeaths ☠️: ${TotalDead}\nRecovered 💪: ${TotalRecovered}\n`, Extra.markdown()).then(()=> next());
 	
 })
 bot.action('Extended report', (ctx,next) => {
