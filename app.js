@@ -13,7 +13,7 @@ let EachCountryData = [];
 
 const API_TOKEN = process.env.CORONA_BOT_TOKEN || '1084220718:AAFkojuExz_bKPyo09WyXeNRxETSAF9bFdo';
 const PORT = process.env.PORT || 5000;
-const URL = process.env.URL || 'https://protected-lake-69075.herokuapp.com/';
+const URL = process.env.URL || 'https://mysterious-shore-53306.herokuapp.com/';
 // /* bot launching */
 
 expressApp.use(bot.webhookCallback('/bot'));
