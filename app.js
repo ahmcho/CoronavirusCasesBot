@@ -49,8 +49,8 @@ bot.action('Simple report', async (ctx,next) => {
 	
 	await Promise.all(promises).then(function(returnedData){
 		TotalConfirmed = returnedData[0].data.features[0].attributes.value;
-		TotalDead = returnedData[2].data.features[0].attributes.value;
-		TotalRecovered = returnedData[1].data.features[0].attributes.value;
+		TotalDead = returnedData[1].data.features[0].attributes.value;
+		TotalRecovered = returnedData[2].data.features[0].attributes.value;
 		
 		
 	})
