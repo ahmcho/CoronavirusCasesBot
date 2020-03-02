@@ -7,8 +7,13 @@ const express = require('express')
 const expressApp = express();
 const TotalConfirmedNumberURL = process.env.TotalConfirmedNumberURL || 'https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=Confirmed%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Confirmed%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&cacheHint=true';
 const TotalConfirmedInWorldURL = process.env.TotalConfirmedInWorldURL || 'https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/2/query?f=json&where=Confirmed%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Country_Region%20asc&resultOffset=0&resultRecordCount=100&cacheHint=true';
+const TotalRecoveredInWorldURL = process.env.TotalRecoveredInWorldURL || 'https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=Confirmed%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Recovered%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&cacheHint=true';
+const TotalDeadInWorldURL = process.env.TotalDeadInWorldURL || 'https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=Confirmed%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Deaths%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&cacheHint=true';
 let CountryNamesKeyboardTextArray = [];
 let EachCountryData = [];
+let TotalConfirmed;
+let TotalDead;
+let TotalRecovered;
 
 
 const API_TOKEN = process.env.CORONA_BOT_TOKEN || '1084220718:AAFkojuExz_bKPyo09WyXeNRxETSAF9bFdo';
@@ -39,11 +44,18 @@ bot.command('options', (ctx) => {
 bot.on("text",(ctx) => {
 	SendReportOptions(ctx);
 })
-bot.action('Simple report', (ctx,next) => {
-	axios.get(TotalConfirmedNumberURL).then(function(countries) {
-		console.log(countries.data.features[0].attributes.value);
-		return ctx.reply(`Total confirmed cases around the world: *${countries.data.features[0].attributes.value}*`, Extra.markdown()).then(() => next());
-	});
+bot.action('Simple report', async (ctx,next) => {
+	let promises = [axios.get(TotalConfirmedNumberURL), axios.get(TotalDeadInWorldURL), axios.get(TotalRecoveredInWorldURL)];
+	
+	await Promise.all(promises).then(function(returnedData){
+		TotalConfirmed = returnedData[0].data.features[0].attributes.value;
+		TotalDead = returnedData[2].data.features[0].attributes.value;
+		TotalRecovered = returnedData[1].data.features[0].attributes.value;
+		
+		
+	})
+	return ctx.reply(`Total confirmed cases in world:\nConfirmed ✅: ${TotalConfirmed}\nDeaths ☠️: ${TotalDead}\nRecovered 💪: ${TotalRecovered}\n`, Extra.markdown());
+	
 })
 bot.action('Extended report', (ctx,next) => {
 	axios.get(TotalConfirmedInWorldURL).then(function(countries) {
