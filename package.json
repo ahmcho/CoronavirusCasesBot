@@ -1,0 +1,17 @@
+{
+  "name": "coronaviruscasesbot",
+  "version": "1.0.0",
+  "description": "A Bot to get notified about Coronavirus cases around the world",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "AhmCho",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.2",
+    "telegraf": "^3.36.0"
+  }
+}
