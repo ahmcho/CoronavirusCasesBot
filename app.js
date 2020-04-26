@@ -1,6 +1,6 @@
 /* Defining Constants */
 const Telegraf = require('telegraf');
-require("dotenv").config();
+require("dotenv").config(); //enviroment 
 const { Extra, Markup } = Telegraf
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const axios = require('axios');
