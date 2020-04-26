@@ -72,7 +72,7 @@ bot.action('Extended report', (ctx,next) => {
 			}
 			SendKeyboardArray(ctx);
 		}
-		//SendKeyboardArray(ctx);
+		SendKeyboardArray(ctx);
 	}).then(() => next());
 });
 
