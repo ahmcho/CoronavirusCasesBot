@@ -6,10 +6,10 @@ const axios = require('axios');
 const express = require('express')
 const expressApp = express();
 
-const TotalConfirmedNumberURL = process.env.TotalConfirmedNumberURL || 'https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=Confirmed%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Confirmed%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&cacheHint=true';
-const TotalConfirmedInWorldURL = process.env.TotalConfirmedInWorldURL || 'https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/2/query?f=json&where=Confirmed%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc&resultOffset=0&resultRecordCount=200&cacheHint=true';
-const TotalRecoveredInWorldURL = process.env.TotalRecoveredInWorldURL || 'https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=Confirmed%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Recovered%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&cacheHint=true';
-const TotalDeadInWorldURL = process.env.TotalDeadInWorldURL || 'https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases/FeatureServer/1/query?f=json&where=Confirmed%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Deaths%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&cacheHint=true';
+const TotalConfirmedNumberURL = process.env.TotalConfirmedNumberURL;
+const TotalConfirmedInWorldURL = process.env.TotalConfirmedInWorldURL;
+const TotalRecoveredInWorldURL = process.env.TotalRecoveredInWorldURL;
+const TotalDeadInWorldURL = process.env.TotalDeadInWorldURL;
 
 let CountryNamesKeyboardTextArray = [];
 let EachCountryData = [];
@@ -20,7 +20,7 @@ let TotalRecovered;
 
 const API_TOKEN = process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
-const URL = process.env.URL || 'https://mysterious-shore-53306.herokuapp.com/';
+const URL = process.env.URL;
 // /* bot launching */
 
 expressApp.use(bot.webhookCallback('/bot'));
