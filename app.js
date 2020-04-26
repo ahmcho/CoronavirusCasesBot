@@ -1,7 +1,7 @@
 /* Defining Constants */
 const Telegraf = require('telegraf')
 const { Extra, Markup } = Telegraf
-const bot = new Telegraf(process.env.CORONA_BOT_TOKEN || '1084220718:AAFkojuExz_bKPyo09WyXeNRxETSAF9bFdo');
+const bot = new Telegraf(process.env.BOT_TOKEN);
 const axios = require('axios');
 const express = require('express')
 const expressApp = express();
@@ -18,7 +18,7 @@ let TotalDead;
 let TotalRecovered;
 
 
-const API_TOKEN = process.env.BOT_TOKEN || '1084220718:AAFkojuExz_bKPyo09WyXeNRxETSAF9bFdo';
+const API_TOKEN = process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || 'https://mysterious-shore-53306.herokuapp.com/';
 // /* bot launching */
