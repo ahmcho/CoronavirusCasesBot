@@ -4,8 +4,8 @@
   "description": "A Bot to get notified about Coronavirus cases around the world",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "author": "AhmCho",
   "license": "ISC",

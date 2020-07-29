@@ -43,12 +43,7 @@ bot.start(async(ctx) => {
 
 bot.help((ctx) => ctx.reply('This bot will get information about COVID-19 (2019-nCoV) Coronavirus confirmed cases  around the world.'));
 
-bot.command('options', (ctx) => {
-  SendReportOptions(ctx);
-})
-bot.on("text",(ctx) => {
-	SendReportOptions(ctx);
-})
+
 bot.action('Simple report', async (ctx,next) => {
 	let promises = [axios.get(TotalConfirmedNumberURL), axios.get(TotalDeadInWorldURL), axios.get(TotalRecoveredInWorldURL)];
 	
@@ -62,27 +57,27 @@ bot.action('Simple report', async (ctx,next) => {
 	return ctx.reply(`Total confirmed cases in world:\nConfirmed ✅: ${TotalConfirmed}\nDeaths ☠️: ${TotalDead}\nRecovered 💪: ${TotalRecovered}\n`, Extra.markdown()).then(()=> next());
 	
 })
-bot.action('Extended report', (ctx,next) => {
-	axios.get(TotalConfirmedInWorldURL).then(function(countries) {
-		let AllCountriesData = countries.data.features;
-		if(CountryNamesKeyboardTextArray.length === 0){
-			for (Countries in AllCountriesData){
-				let CountryData = AllCountriesData[Countries].attributes;
-				CountryNamesKeyboardTextArray.push(Markup.callbackButton(`${CountryData['Country_Region']}`, `${CountryData['Country_Region']}`));
-			}
-			SendKeyboardArray(ctx);
+
+bot.action('Extended report', async(ctx,next) => {
+	const countries = await axios.get(TotalConfirmedInWorldURL);
+	let AllCountriesData = countries.data.features;
+	if(CountryNamesKeyboardTextArray.length === 0){
+		for (Countries in AllCountriesData){
+			let CountryData = AllCountriesData[Countries].attributes;
+			CountryNamesKeyboardTextArray.push(Markup.callbackButton(`${CountryData['Country_Region']}`, `${CountryData['Country_Region']}`));
 		}
-		SendKeyboardArray(ctx);
-	}).then(() => next());
+	}
+	SendKeyboardArray(ctx);
+	await next();
 });
 
 bot.action(/.+/, (ctx) => {
-	console.log(ctx.match[0]);
+	//console.log(ctx.match[0]);
 	switch(ctx.match[0]) {
 		case 'Simple report':
 			ctx.answerCbQuery(`You chose ${ctx.match[0]}!`)
 			break;
-		case 'Extended report':
+		case 'Extended report':	
 			ctx.answerCbQuery(`You chose ${ctx.match[0]}!`)
 			break;
 		default:
@@ -136,5 +131,12 @@ const SplitKeyboard = (keyboard) => {
 	}
 	return result;
 }
-
+bot.command('options', (ctx) => {
+	SendReportOptions(ctx);
+})
+  
+bot.on("text",(ctx) => {
+	  SendReportOptions(ctx);
+})
+  
 bot.launch()
