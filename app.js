@@ -4,8 +4,10 @@ require("dotenv").config(); //enviroment
 const { Extra, Markup } = Telegraf
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const axios = require('axios');
+const crawler = require('crawler-request');
 const express = require('express')
 const expressApp = express();
+const { getLink } = require('./getAzData');
 
 const TotalConfirmedNumberURL = process.env.TotalConfirmedNumberURL;
 const TotalConfirmedInWorldURL = process.env.TotalConfirmedInWorldURL;
@@ -21,6 +23,7 @@ let TotalRecovered;
 
 const PORT = process.env.PORT || 5000;
 const URL = process.env.HEROKU_URL;
+
 // /* bot launching */
 
 expressApp.use(bot.webhookCallback('/bot'));
@@ -43,6 +46,18 @@ bot.start(async(ctx) => {
 
 bot.help((ctx) => ctx.reply('This bot will get information about COVID-19 (2019-nCoV) Coronavirus confirmed cases  around the world.'));
 
+bot.command('azetoday', async (ctx) => {
+	const result = await getLink();
+	const response = await crawler(result);
+	const textArray = response.text.split('\n');
+	const today = textArray[4].replace('ÜmumiBu gün','');
+	//const infectedAll = `${textArray[5].trim()} ${textArray[6]}: ${textArray[7]}`;
+	const newInfected = `${textArray[10]}`;
+	const newRecovered = `${textArray[13]}`;
+	//const testsToday = `${textArray[16]}`;
+	const deathsToday = `${textArray[19]}`;
+	return ctx.reply(`🇦🇿🦠 Azərbaycanda bu günə (${today})\n${newInfected} yeni koronavirusa yoluxma faktı qeydə alınıb.\n${deathsToday} nəfər ölüb,\n${newRecovered} nəfər isə müalicə olunaraq evə buraxılıb.`);
+})
 
 bot.action('Simple report', async (ctx,next) => {
 	let promises = [axios.get(TotalConfirmedNumberURL), axios.get(TotalDeadInWorldURL), axios.get(TotalRecoveredInWorldURL)];
@@ -51,8 +66,6 @@ bot.action('Simple report', async (ctx,next) => {
 		TotalConfirmed = returnedData[0].data.features[0].attributes.value;
 		TotalDead = returnedData[1].data.features[0].attributes.value;
 		TotalRecovered = returnedData[2].data.features[0].attributes.value;
-		
-		
 	})
 	return ctx.reply(`Total confirmed cases in world:\nConfirmed ✅: ${TotalConfirmed}\nDeaths ☠️: ${TotalDead}\nRecovered 💪: ${TotalRecovered}\n`, Extra.markdown()).then(()=> next());
 	
