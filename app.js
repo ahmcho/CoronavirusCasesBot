@@ -59,7 +59,7 @@ bot.command('azetoday', async (ctx) => {
 		const newRecovered = `${textArray[13]}`;
 		const deathsToday = `${textArray[19]}`;
 		const message = `🇦🇿🦠 Azərbaycanda bu günə (${today})\n${newInfected} yeni koronavirusa yoluxma faktı qeydə alınıb.\n${deathsToday} nəfər ölüb,${newRecovered} nəfər isə müalicə olunaraq evə buraxılıb.`;
-		cache.put('aze', message);
+		cache.put('aze', message, 1000*3600);
 		return ctx.reply(message);
 	}
 	
