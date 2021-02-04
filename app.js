@@ -4,22 +4,33 @@ require("dotenv").config(); //enviroment
 const { Extra, Markup } = Telegraf
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const axios = require('axios');
+const moment = require('moment');
 const crawler = require('crawler-request');
 const cache = require('memory-cache');
 const express = require('express')
 const expressApp = express();
-const { getLink } = require('./getAzData');
 
 const TotalConfirmedNumberURL = process.env.TotalConfirmedNumberURL;
 const TotalConfirmedInWorldURL = process.env.TotalConfirmedInWorldURL;
 const TotalRecoveredInWorldURL = process.env.TotalRecoveredInWorldURL;
 const TotalDeadInWorldURL = process.env.TotalDeadInWorldURL;
-
+const today = moment().format("DD.MM.YYYY");
+const yesterday = moment().subtract(1, 'days').format("DD.MM.YYYY");
 let CountryNamesKeyboardTextArray = [];
 let EachCountryData = [];
 let TotalConfirmed;
 let TotalDead;
 let TotalRecovered;
+
+const buildMessageFromResponse = (response) => {
+	const textArray = response.text.split('\n');
+	const today = textArray[4].replace('ÜmumiBu gün','');	
+	const newInfected = `${textArray[10]}`;
+	const newRecovered = `${textArray[13]}`;
+	const deathsToday = `${textArray[19]}`;
+	const message = `🇦🇿🦠 Azərbaycanda bu günə (${today})\n${newInfected} yeni koronavirusa yoluxma faktı qeydə alınıb.\n${deathsToday} nəfər ölüb,${newRecovered} nəfər isə müalicə olunaraq evə buraxılıb.`;
+	return message;
+}
 
 
 const PORT = process.env.PORT || 5000;
@@ -51,16 +62,17 @@ bot.command('azetoday', async (ctx) => {
 	if(cache.get('aze') !== null){
 		return ctx.reply(cache.get('aze'))
 	} else {
-		const result = await getLink();
-		const response = await crawler(result);
-		const textArray = response.text.split('\n');
-		const today = textArray[4].replace('ÜmumiBu gün','');	
-		const newInfected = `${textArray[10]}`;
-		const newRecovered = `${textArray[13]}`;
-		const deathsToday = `${textArray[19]}`;
-		const message = `🇦🇿🦠 Azərbaycanda bu günə (${today})\n${newInfected} yeni koronavirusa yoluxma faktı qeydə alınıb.\n${deathsToday} nəfər ölüb,${newRecovered} nəfər isə müalicə olunaraq evə buraxılıb.`;
-		cache.put('aze', message, 1000*3600);
-		return ctx.reply(message);
+		const responseToday = await crawler(`https://koronavirusinfo.az/files/3/tab_${today}.pdf`);
+		if(responseToday.status === 404){
+			const responseYesterday = await crawler(`https://koronavirusinfo.az/files/3/tab_${yesterday}.pdf`);
+			const message = buildMessageFromResponse(responseYesterday);
+			cache.put('aze', message, 1000*3600);
+			return ctx.reply(message);
+		} else {
+			const message = buildMessageFromResponse(responseToday);
+			cache.put('aze', message, 1000*3600);
+			return ctx.reply(message);
+		}
 	}
 	
 })
