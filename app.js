@@ -28,7 +28,7 @@ const buildMessageFromResponse = (response) => {
 	const newInfected = `${textArray[10]}`;
 	const newRecovered = `${textArray[13]}`;
 	const deathsToday = `${textArray[19]}`;
-	const message = `🇦🇿🦠 Azərbaycanda bu günə (${today})\n${newInfected} yeni koronavirusa yoluxma faktı qeydə alınıb.\n${deathsToday} nəfər ölüb,${newRecovered} nəfər isə müalicə olunaraq evə buraxılıb.`;
+	const message = `🇦🇿🦠 Azərbaycanda bu günə (${today})\n${newInfected} yeni koronavirusa yoluxma faktı qeydə alınıb.\n${deathsToday} nəfər ölüb, ${newRecovered} nəfər isə müalicə olunaraq evə buraxılıb.\n#koronavirus`;
 	return message;
 }
 
@@ -60,18 +60,22 @@ bot.help((ctx) => ctx.reply('This bot will get information about COVID-19 (2019-
 
 bot.command('azetoday', async (ctx) => {
 	if(cache.get('aze') !== null){
-		return ctx.reply(cache.get('aze'))
+		return ctx.replyWithPhoto(cache.get('link'), { caption: cache.get('aze') })
 	} else {
 		const responseToday = await crawler(`https://koronavirusinfo.az/files/3/tab_${today}.pdf`);
 		if(responseToday.status === 404){
 			const responseYesterday = await crawler(`https://koronavirusinfo.az/files/3/tab_${yesterday}.pdf`);
+			const imageLinkYesterday = await crawler('https://ahmcho.com/nkgovimagelink/yestertoday');
 			const message = buildMessageFromResponse(responseYesterday);
 			cache.put('aze', message, 1000*3600);
-			return ctx.reply(message);
+			cache.put('link', imageLinkYesterday.text, 1000*3600);
+			return ctx.replyWithPhoto(imageLinkYesterday.text,{ caption: message })
 		} else {
+			const imageLinkToday = await crawler('https://ahmcho.com/nkgovimagelink/today');
 			const message = buildMessageFromResponse(responseToday);
 			cache.put('aze', message, 1000*3600);
-			return ctx.reply(message);
+			cache.put('link', imageLinkToday.text, 1000*3600);
+			return ctx.replyWithPhoto(imageLinkToday.text,{ caption: message })
 		}
 	}
 	
