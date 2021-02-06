@@ -65,7 +65,7 @@ bot.command('azetoday', async (ctx) => {
 		const responseToday = await crawler(`https://koronavirusinfo.az/files/3/tab_${today}.pdf`);
 		if(responseToday.status === 404){
 			const responseYesterday = await crawler(`https://koronavirusinfo.az/files/3/tab_${yesterday}.pdf`);
-			const imageLinkYesterday = await crawler('https://ahmcho.com/nkgovimagelink/yestertoday');
+			const imageLinkYesterday = await crawler('https://ahmcho.com/nkgovimagelink/yesterday');
 			const message = buildMessageFromResponse(responseYesterday);
 			cache.put('aze', message, 1000*3600);
 			cache.put('link', imageLinkYesterday.text, 1000*3600);
