@@ -4,10 +4,14 @@ require("dotenv").config(); //enviroment
 const { Extra, Markup } = Telegraf
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const axios = require('axios');
+const fs = require('fs');
 const moment = require('moment');
 const crawler = require('crawler-request');
 const cache = require('memory-cache');
-const express = require('express')
+const pdfTransform = require("pdf-transform");
+const download = require('download-pdf');
+const express = require('express');
+const {deleteFolderRecursive, buildMessageFromResponse} = require('./utils');
 const expressApp = express();
 
 const TotalConfirmedNumberURL = process.env.TotalConfirmedNumberURL;
@@ -22,15 +26,6 @@ let TotalConfirmed;
 let TotalDead;
 let TotalRecovered;
 
-const buildMessageFromResponse = (response) => {
-	const textArray = response.text.split('\n');
-	const today = textArray[4].replace('ÜmumiBu gün','');	
-	const newInfected = `${textArray[10]}`;
-	const newRecovered = `${textArray[13]}`;
-	const deathsToday = `${textArray[19]}`;
-	const message = `🇦🇿🦠 Azərbaycanda bu günə (${today})\n${newInfected} yeni koronavirusa yoluxma faktı qeydə alınıb.\n${deathsToday} nəfər ölüb, ${newRecovered} nəfər isə müalicə olunaraq evə buraxılıb.\n#koronavirus`;
-	return message;
-}
 
 
 const PORT = process.env.PORT || 5000;
@@ -51,6 +46,7 @@ expressApp.listen(PORT, () => {
 })
 
 /* Starting work with bot */
+
 bot.start(async(ctx) => { 
 	await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.message.chat.username}! This bot will get information about COVID-19 (2019-nCoV) Coronavirus confirmed cases  around the world.`);
 	SendReportOptions(ctx);
@@ -58,24 +54,60 @@ bot.start(async(ctx) => {
 
 bot.help((ctx) => ctx.reply('This bot will get information about COVID-19 (2019-nCoV) Coronavirus confirmed cases  around the world.'));
 
+bot.command('delcache', (ctx) => {
+	const pngOutputPath = './png-outputs';
+	try {
+		fs.existsSync(`${today}.pdf`) && fs.unlinkSync(`${today}.pdf`)
+		fs.existsSync(`${yesterday}.pdf`) && fs.unlinkSync(`${yesterday}.pdf`);
+		deleteFolderRecursive(pngOutputPath)
+		cache.del('source');
+		cache.del('aze');
+	} catch(err) {
+		console.error(err)
+	}
+	return ctx.reply('Cache deleted')
+});
 bot.command('azetoday', async (ctx) => {
+	const filename = (day) => `${day}.pdf`; 
+	const directory = './'
 	if(cache.get('aze') !== null){
-		return ctx.replyWithPhoto(cache.get('link'), { caption: cache.get('aze') })
+		return ctx.replyWithPhoto({ source: cache.get('source')}, { caption: cache.get('aze') })
 	} else {
 		const responseToday = await crawler(`https://koronavirusinfo.az/files/3/tab_${today}.pdf`);
 		if(responseToday.status === 404){
 			const responseYesterday = await crawler(`https://koronavirusinfo.az/files/3/tab_${yesterday}.pdf`);
-			const imageLinkYesterday = await crawler('https://ahmcho.com/nkgovimagelink/yesterday');
 			const message = buildMessageFromResponse(responseYesterday);
 			cache.put('aze', message, 1000*3600);
-			cache.put('link', imageLinkYesterday.text, 1000*3600);
-			return ctx.replyWithPhoto(imageLinkYesterday.text,{ caption: message })
+			download(`https://koronavirusinfo.az/files/3/tab_${yesterday}.pdf`,{directory, filename: filename(yesterday) }	, function(err){
+				if (err) throw err
+				setTimeout(() =>{
+					pdfTransform.convert({
+						fileName: `${yesterday}.pdf`, // Specify PDF file path here
+						convertTo: "png", // Can be "png" also
+					})
+				},500)
+				setTimeout(() =>{
+					cache.put('source', './png-outputs/output_1.png')
+					return ctx.replyWithPhoto({source: cache.get('source')}, { caption: message })
+				}, 500)
+			})
+			
 		} else {
-			const imageLinkToday = await crawler('https://ahmcho.com/nkgovimagelink/today');
 			const message = buildMessageFromResponse(responseToday);
 			cache.put('aze', message, 1000*3600);
-			cache.put('link', imageLinkToday.text, 1000*3600);
-			return ctx.replyWithPhoto(imageLinkToday.text,{ caption: message })
+			download(`https://koronavirusinfo.az/files/3/tab_${today}.pdf`,{directory, filename: filename(today) }	, function(err){
+				if (err) throw err
+				setTimeout(() =>{
+					pdfTransform.convert({
+						fileName: `${today}.pdf`, // Specify PDF file path here
+						convertTo: "png", // Can be "png" also
+					})
+				},500)
+				setTimeout(() =>{
+					cache.put('source', './png-outputs/output_1.png')
+					return ctx.replyWithPhoto({source: cache.get('source')}, { caption: message })
+				}, 500)
+			})
 		}
 	}
 	
