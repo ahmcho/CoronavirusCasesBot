@@ -11,7 +11,7 @@ const cache = require('memory-cache');
 const pdfTransform = require("pdf-transform");
 const download = require('download-pdf');
 const express = require('express');
-const {deleteFolderRecursive, buildMessageFromResponse} = require('./utils');
+const {deleteFolderRecursive, buildMessageFromResponse, downloadPdf} = require('./utils');
 const expressApp = express();
 
 const TotalConfirmedNumberURL = process.env.TotalConfirmedNumberURL;
@@ -68,8 +68,6 @@ bot.command('delcache', (ctx) => {
 	return ctx.reply('Cache deleted')
 });
 bot.command('azetoday', async (ctx) => {
-	const filename = (day) => `${day}.pdf`; 
-	const directory = './'
 	if(cache.get('aze') !== null){
 		return ctx.replyWithPhoto({ source: cache.get('source')}, { caption: cache.get('aze') })
 	} else {
@@ -78,39 +76,13 @@ bot.command('azetoday', async (ctx) => {
 			const responseYesterday = await crawler(`https://koronavirusinfo.az/files/3/tab_${yesterday}.pdf`);
 			const message = buildMessageFromResponse(responseYesterday);
 			cache.put('aze', message, 1000*3600);
-			download(`https://koronavirusinfo.az/files/3/tab_${yesterday}.pdf`,{directory, filename: filename(yesterday) }	, function(err){
-				if (err) throw err
-				setTimeout(() =>{
-					pdfTransform.convert({
-						fileName: `${yesterday}.pdf`, // Specify PDF file path here
-						convertTo: "png", // Can be "png" also
-					})
-				},500)
-				setTimeout(() =>{
-					cache.put('source', './png-outputs/output_1.png')
-					return ctx.replyWithPhoto({source: cache.get('source')}, { caption: message })
-				}, 500)
-			})
-			
+			downloadPdf(yesterday, ctx, cache.get('aze'));			
 		} else {
 			const message = buildMessageFromResponse(responseToday);
 			cache.put('aze', message, 1000*3600);
-			download(`https://koronavirusinfo.az/files/3/tab_${today}.pdf`,{directory, filename: filename(today) }	, function(err){
-				if (err) throw err
-				setTimeout(() =>{
-					pdfTransform.convert({
-						fileName: `${today}.pdf`, // Specify PDF file path here
-						convertTo: "png", // Can be "png" also
-					})
-				},500)
-				setTimeout(() =>{
-					cache.put('source', './png-outputs/output_1.png')
-					return ctx.replyWithPhoto({source: cache.get('source')}, { caption: message })
-				}, 500)
-			})
+			downloadPdf(today, ctx, cache.get('aze'));
 		}
 	}
-	
 })
 
 bot.action('Simple report', async (ctx,next) => {
