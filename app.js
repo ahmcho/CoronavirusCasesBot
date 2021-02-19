@@ -4,22 +4,13 @@ require("dotenv").config(); //enviroment
 const { Extra, Markup } = Telegraf
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const axios = require('axios');
-const fs = require('fs');
-const moment = require('moment');
-const crawler = require('crawler-request');
-const cache = require('memory-cache');
-const pdfTransform = require("pdf-transform");
-const download = require('download-pdf');
 const express = require('express');
-const {deleteFolderRecursive, buildMessageFromResponse, downloadPdf} = require('./utils');
 const expressApp = express();
 
 const TotalConfirmedNumberURL = process.env.TotalConfirmedNumberURL;
 const TotalConfirmedInWorldURL = process.env.TotalConfirmedInWorldURL;
 const TotalRecoveredInWorldURL = process.env.TotalRecoveredInWorldURL;
 const TotalDeadInWorldURL = process.env.TotalDeadInWorldURL;
-const today = moment().format("DD.MM.YYYY");
-const yesterday = moment().subtract(1, 'days').format("DD.MM.YYYY");
 let CountryNamesKeyboardTextArray = [];
 let EachCountryData = [];
 let TotalConfirmed;
@@ -53,37 +44,6 @@ bot.start(async(ctx) => {
 });
 
 bot.help((ctx) => ctx.reply('This bot will get information about COVID-19 (2019-nCoV) Coronavirus confirmed cases  around the world.'));
-
-bot.command('delcache', (ctx) => {
-	const pngOutputPath = './png-outputs';
-	try {
-		fs.existsSync(`${today}.pdf`) && fs.unlinkSync(`${today}.pdf`)
-		fs.existsSync(`${yesterday}.pdf`) && fs.unlinkSync(`${yesterday}.pdf`);
-		deleteFolderRecursive(pngOutputPath)
-		cache.del('source');
-		cache.del('aze');
-	} catch(err) {
-		console.error(err)
-	}
-	return ctx.reply('Cache deleted')
-});
-bot.command('azetoday', async (ctx) => {
-	if(cache.get('aze') !== null){
-		return ctx.replyWithPhoto({ source: cache.get('source')}, { caption: cache.get('aze') })
-	} else {
-		const responseToday = await crawler(`https://koronavirusinfo.az/files/3/tab_${today}.pdf`);
-		if(responseToday.status === 404){
-			const responseYesterday = await crawler(`https://koronavirusinfo.az/files/3/tab_${yesterday}.pdf`);
-			const message = buildMessageFromResponse(responseYesterday);
-			cache.put('aze', message, 1000*3600);
-			downloadPdf(yesterday, ctx, cache.get('aze'));			
-		} else {
-			const message = buildMessageFromResponse(responseToday);
-			cache.put('aze', message, 1000*3600);
-			downloadPdf(today, ctx, cache.get('aze'));
-		}
-	}
-})
 
 bot.action('Simple report', async (ctx,next) => {
 	let promises = [axios.get(TotalConfirmedNumberURL), axios.get(TotalDeadInWorldURL), axios.get(TotalRecoveredInWorldURL)];
